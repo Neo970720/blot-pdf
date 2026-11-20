@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy — Blot</title>
+<meta name="description" content="Blot runs in your browser. Your PDF is never uploaded. What the site does and does not collect: no accounts, no analytics by default, licence and theme stored locally.">
+<link rel="canonical" href="https://neo970720.github.io/blot-pdf/privacy.html">
+<meta name="theme-color" content="#f6f5f1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0e11" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Privacy — Blot">
+<meta property="og:description" content="Your PDF is never uploaded. Here is exactly what leaves your browser, and what does not.">
+<meta property="og:url" content="https://neo970720.github.io/blot-pdf/privacy.html">
+<meta property="og:image" content="https://neo970720.github.io/blot-pdf/assets/og.png">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="index.html" aria-label="Blot home">
+      <svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="3.4" rx="1"/><rect x="2" y="10" width="14" height="3.4" rx="1"/><rect x="2" y="16" width="17" height="3.4" rx="1"/></svg>
+      <span>Blot</span>
+    </a>
+    <nav class="nav" aria-label="Main">
+      <a href="index.html#how">How it works</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="index.html#faq">FAQ</a>
+      <span class="navline" aria-hidden="true"></span>
+      <a class="btn btn-accent btn-sm" href="app/index.html">Open the app</a>
+    </nav>
+  </div>
+</header>
+
+<main class="doc">
+  <div class="wrap prose">
+    <h1>Privacy</h1>
+    <p class="updated">Last updated 20 November 2026</p>
+
+    <p>The short version: your PDF is opened, redacted and saved by your own browser. There is no Blot server that accepts documents, so there is no copy of your file anywhere but on your device.</p>
+
+    <h2>1. What never leaves your device</h2>
+    <ul>
+      <li>The PDF itself, its text and its images.</li>
+      <li>The redaction boxes you draw, the values auto-detection finds, and the keywords you type.</li>
+      <li>The exported file and its SHA-256 digest — the digest is computed in the browser and only appears in your download and, if you ask for one, the certificate.</li>
+    </ul>
+    <p>The site is served as static files. There is no upload endpoint, no document storage and no processing queue. You can verify this by opening the app, disconnecting from the network, and using it: the free plan keeps working.</p>
+
+    <h2>2. What the site does receive</h2>
+    <ul>
+      <li><b>Hosting logs.</b> The static host (Cloudflare Pages) records ordinary request data such as IP address, user agent and the URL requested, as every web host does. It never sees a document.</li>
+      <li><b>A licence check, if you buy Pro.</b> When you activate a key, the app sends that key to Polar's public licence endpoint to confirm it is valid. The key, the product it belongs to and basic request metadata go to Polar. Your documents do not.</li>
+      <li><b>Payment data, if you buy Pro.</b> Checkout is hosted by Polar as merchant of record. Card details are entered on their pages and never reach Blot. See Polar's own privacy policy for what they process.</li>
+      <li><b>Email, if you write to us.</b> Whatever you put in the message.</li>
+    </ul>
+
+    <h2>3. What is stored in your browser</h2>
+    <ul>
+      <li><span class="mono">blot.license.v1</span> — your licence key, its source and the last check date, so Pro works offline.</li>
+      <li><span class="mono">blot.theme</span> — light or dark, if you toggle it.</li>
+      <li>A service-worker cache of the app's own files, so the tool loads without a network.</li>
+    </ul>
+    <p>No advertising identifiers, no cross-site trackers, no fingerprinting, and no analytics script in this build. Clearing site data removes all of it; removing the licence from the app's licence dialog does the same for the key.</p>
+
+    <h2>4. Your obligations</h2>
+    <p>Deciding that a document may be processed in a browser on your device is your call, not ours. If your organisation has rules about privileged material, health data or client confidentiality, follow them. Blot is a tool, not legal advice, and a redaction is only as good as the areas you marked — which is why the app reopens the export and checks it.</p>
+
+    <h2>5. Children</h2>
+    <p>Blot is a work tool and is not directed at children. It does not ask for a name, age or email address.</p>
+
+    <h2>6. Changes and contact</h2>
+    <p>If this policy changes, the date above changes with it; the app's core promise — no document upload — will not be quietly reversed. Questions: <a class="link" href="mailto:neo970720@gmail.com">neo970720@gmail.com</a>.</p>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap foot-grid">
+    <div>
+      <a class="brand" href="index.html" style="font-size:17px">
+        <svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="3.4" rx="1"/><rect x="2" y="10" width="14" height="3.4" rx="1"/><rect x="2" y="16" width="17" height="3.4" rx="1"/></svg>
+        <span>Blot</span>
+      </a>
+    </div>
+    <div class="foot-links">
+      <a href="app/index.html">App</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="mailto:neo970720@gmail.com">Contact</a>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

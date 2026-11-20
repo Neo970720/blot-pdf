@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Redact a PDF without uploading it — Blot</title>
+<meta name="description" content="Browser-local PDF redaction for contracts, HR files and medical records. Pages are pixel-burned at 150–300 DPI, metadata is stripped, and a built-in leak check proves the text is gone. No account, no upload, free for small files.">
+<link rel="canonical" href="https://neo970720.github.io/blot-pdf/">
+<meta name="theme-color" content="#f6f5f1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0e11" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Blot">
+<meta property="og:title" content="Redact a PDF without uploading it — Blot">
+<meta property="og:description" content="Files stay in your browser. Redactions are burned into the page, metadata is stripped, and the export is checked for leftovers before you send it.">
+<meta property="og:url" content="https://neo970720.github.io/blot-pdf/">
+<meta property="og:image" content="https://neo970720.github.io/blot-pdf/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Redact a PDF without uploading it — Blot">
+<meta name="twitter:description" content="Browser-local PDF redaction with a built-in leak check.">
+<meta name="twitter:image" content="https://neo970720.github.io/blot-pdf/assets/og.png">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Blot",
+  "applicationCategory": "BusinessApplication",
+  "applicationSubCategory": "PDF redaction",
+  "operatingSystem": "Any modern browser (Chrome, Edge, Safari, Firefox) — desktop and mobile",
+  "url": "https://neo970720.github.io/blot-pdf/",
+  "description": "Browser-local PDF redaction. Redacted pages are rasterised so the underlying text is destroyed, document metadata is removed, and the exported file can be checked for leftovers inside the app.",
+  "image": "https://neo970720.github.io/blot-pdf/assets/og.png",
+  "featureList": [
+    "Redaction that rasterises the page instead of drawing a black rectangle over it",
+    "No upload: files are parsed and rewritten in the browser",
+    "PII auto-detect for emails, phone numbers, SSNs, card numbers, IBANs and Korean resident numbers",
+    "Metadata, bookmark, form and attachment stripping",
+    "Built-in leak check that reopens the export and searches for redacted values",
+    "Redaction certificate with SHA-256 digest"
+  ],
+  "offers": [
+    { "@type": "Offer", "name": "Free", "price": "0", "priceCurrency": "USD", "description": "10 pages per file, 150 DPI, manual redaction boxes, leak check." },
+    { "@type": "Offer", "name": "Pro monthly", "price": "9", "priceCurrency": "USD", "description": "Unlimited pages, batch, PII auto-detect, 300 DPI, certificate." },
+    { "@type": "Offer", "name": "Pro lifetime", "price": "29", "priceCurrency": "USD", "description": "Same as Pro monthly, one payment." }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Does Blot upload my PDF?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. Blot is a static site: the PDF is read, redacted and written again inside your browser tab. There is no endpoint that accepts files, and the app keeps working after you switch off your connection." }
+    },
+    {
+      "@type": "Question",
+      "name": "Is this real redaction or just a black box drawn on top?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Real redaction. Any page with a redaction is converted to an image at 150–300 DPI and the boxes are painted into that image, so the text underneath no longer exists in the file. Pages without redactions are copied as vectors with annotations removed, and the export is written as a new document, so bookmarks, form fields and attachments from the original are not carried over." }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I know the redaction worked?",
+      "acceptedAnswer": { "@type": "Answer", "text": "The app reopens the file it just produced and searches the text layer for every value it redacted. The result appears in the report panel with the page count, resolution and SHA-256 of the output. You can run the same check in any PDF reader by searching for the redacted word." }
+    },
+    {
+      "@type": "Question",
+      "name": "What does it cost?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Free covers files up to 10 pages with manual redactions at 150 DPI, including the leak check, with no account. Pro is $9 per month or $29 once and adds unlimited pages, batch processing, PII auto-detect, 300 DPI, box labels and a redaction certificate." }
+    },
+    {
+      "@type": "Question",
+      "name": "Does it work on scanned PDFs?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes for redacting them: you can draw boxes over a scanned page and the page is rasterised, so the pixels are gone. Automatic detection needs a text layer, so on a pure scan you draw the boxes yourself (or run OCR elsewhere first)." }
+    },
+    {
+      "@type": "Question",
+      "name": "What happens to my licence when I go offline?",
+      "acceptedAnswer": { "@type": "Answer", "text": "A licence key is checked once against Polar and then cached in this browser, so Pro keeps working offline and on a plane. It is re-checked in the background at most once a week when you are online." }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="index.html" aria-label="Blot home">
+      <svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="3.4" rx="1"/><rect x="2" y="10" width="14" height="3.4" rx="1"/><rect x="2" y="16" width="17" height="3.4" rx="1"/></svg>
+      <span>Blot</span>
+    </a>
+    <nav class="nav" aria-label="Main">
+      <a href="#how">How it works</a>
+      <a href="#compare" class="hide-sm">Compare</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="#faq" class="hide-sm">FAQ</a>
+      <span class="navline" aria-hidden="true"></span>
+      <a class="btn btn-accent btn-sm" href="app/index.html">Open the app</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <p class="eyebrow"><span class="dot" aria-hidden="true"></span>100% in your browser</p>
+        <h1 class="hero-title">Redact a PDF <span class="strike">without uploading it</span>.</h1>
+        <p class="hero-sub">Contracts, HR files, medical records. Black out what must not travel, then send a file whose hidden text is actually gone — not covered.</p>
+        <div class="hero-cta">
+          <a class="btn btn-accent" href="app/index.html">Redact a PDF — free</a>
+          <a class="btn btn-ghost" href="#how">See how it works</a>
+        </div>
+        <div class="hero-note">
+          <span><b class="tick">✓</b> No account</span>
+          <span><b class="tick">✓</b> No file upload</span>
+          <span><b class="tick">✓</b> Works offline</span>
+          <span><b class="tick">✓</b> Leak check built in</span>
+        </div>
+      </div>
+
+      <div class="demo-card" aria-hidden="true">
+        <div class="demo-head">
+          <span class="dots"><i></i><i></i><i></i></span>
+          <span class="name">settlement-agreement.pdf</span>
+        </div>
+        <div class="demo-body">
+          <div class="demo-paper">
+            <div class="ph">Confidential draft — do not distribute</div>
+            <h4>Settlement agreement</h4>
+            <div class="ln w92"></div>
+            <div class="ln w80"></div>
+            <div class="ln"></div>
+            <div class="ln w60"></div>
+            <p style="margin-top:14px">Claimant: <span class="redactbar">Maya Ferrell-Ruiz</span></p>
+            <p>SSN <span class="redactbar">427-88-1930</span> · account <span class="redactbar">GB29 NWBK 6016</span></p>
+            <div class="ln w92" style="margin-top:14px"></div>
+            <div class="ln w80"></div>
+            <div class="ln w60"></div>
+          </div>
+          <span class="demo-badge"><b>0 MB</b> uploaded</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how" style="padding-top:26px">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">Three steps, one tab</p>
+        <h2>A redaction is only real when the text under it is gone</h2>
+        <p>Most online tools put a black rectangle over the words and save the file — the words are still there, selectable and searchable. Blot replaces the page with an image and paints the boxes into it.</p>
+      </div>
+      <div class="grid3">
+        <article class="card">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2"/></svg>
+          <p class="num">01</p>
+          <h3>Open the file</h3>
+          <p>Drop a PDF in. It is read by the browser itself, so nothing travels over the network — you can do this with Wi-Fi switched off.</p>
+        </article>
+        <article class="card">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="5" width="18" height="4" rx="1"/><rect x="3" y="15" width="11" height="4" rx="1"/><path d="M15 12h6"/></svg>
+          <p class="num">02</p>
+          <h3>Mark what must go</h3>
+          <p>Drag boxes over names, numbers, clauses — or let Pro scan the text layer for emails, cards, SSNs, IBANs and your own keyword list.</p>
+        </article>
+        <article class="card">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+          <p class="num">03</p>
+          <h3>Export, then prove it</h3>
+          <p>The export is a new document at 150–300 DPI with metadata stripped. Blot reopens it and searches for every value you redacted before telling you it passed.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="compare">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">Why a browser tool</p>
+        <h2>Same job as a cloud redactor, without handing over the document</h2>
+        <p>Cloud tools are convenient until the file is the one thing you were not allowed to send anywhere. That is the whole reason this exists.</p>
+      </div>
+      <div class="compare table-scroll">
+        <table>
+          <caption class="sr-only">Comparison of Blot with common online PDF redaction tools</caption>
+          <thead>
+            <tr>
+              <th scope="col">Tool</th>
+              <th scope="col">File leaves your device</th>
+              <th scope="col">True pixel-burn</th>
+              <th scope="col">Leak check after export</th>
+              <th scope="col">PII auto-detect</th>
+              <th scope="col">Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Blot</th>
+              <td class="yes">No — browser only</td>
+              <td class="yes">Yes</td>
+              <td class="yes">Included, free</td>
+              <td class="yes">Pro</td>
+              <td>$0 · $9/mo · $29 once</td>
+            </tr>
+            <tr>
+              <th scope="row">PDF24</th>
+              <td class="no">Yes, server processed</td>
+              <td class="yes">Yes</td>
+              <td class="no">Manual, in another reader</td>
+              <td class="no">Search term only</td>
+              <td>Free</td>
+            </tr>
+            <tr>
+              <th scope="row">iLovePDF</th>
+              <td class="no">Yes</td>
+              <td class="yes">Yes (Premium for some modes)</td>
+              <td class="no">Manual</td>
+              <td class="no">Limited</td>
+              <td>Free tier · from $7/mo</td>
+            </tr>
+            <tr>
+              <th scope="row">Adobe Acrobat online</th>
+              <td class="no">Yes</td>
+              <td class="yes">Yes</td>
+              <td class="no">Manual</td>
+              <td class="no">Some</td>
+              <td>Subscription</td>
+            </tr>
+            <tr>
+              <th scope="row">Redactable</th>
+              <td class="no">Yes — AI in the cloud</td>
+              <td class="yes">Yes</td>
+              <td class="no">Certificates on paid plans</td>
+              <td class="yes">Yes</td>
+              <td>From $19/mo per seat</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted" style="margin-top:12px">Competitor behaviour and prices read from their public pages on 20 November 2026. Redaction methods are described by each vendor; check the file you get back, as the checklists in this field recommend.</p>
+    </div>
+  </section>
+
+  <section id="verify">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">The part everyone skips</p>
+        <h2>You cannot see a failed redaction by looking at the page</h2>
+        <p>A 2019 court filing taught the whole industry this: black bars in a PDF can sit on top of text that is still there. The only proof is opening the exported file and searching it. Blot does that for you, in the same tab, before you download.</p>
+      </div>
+      <div class="compare" style="padding:22px">
+        <dl class="kv" style="font-size:14px;gap:8px 18px">
+          <dt>What the check does</dt><dd>Reopens the exported bytes, extracts the text layer of every page, and searches for every value the tool redacted — auto-detected matches and the text that sat under your manual boxes.</dd>
+          <dt>What a pass means</dt><dd>Zero hits, and rasterised pages carry no extractable text at all. The report shows page count, resolution and the SHA-256 of the exact file you received.</dd>
+          <dt>What it cannot do</dt><dd>It cannot see text baked into a scan as pixels — that needs OCR, which this tool does not run. Draw your boxes on scans and the page is burned as an image either way.</dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">Pricing</p>
+        <h2>Free is a real tool. Pro removes the ceilings.</h2>
+        <p>No card for the free plan, no account to create, no watermark on your output. Pro is for people who redact every week.</p>
+      </div>
+      <div class="price-grid">
+        <div class="plan">
+          <h3>Free</h3>
+          <p class="price">$0 <small>forever</small></p>
+          <ul>
+            <li><b class="tick">✓</b> 10 pages per file</li>
+            <li><b class="tick">✓</b> Unlimited manual redaction boxes</li>
+            <li><b class="tick">✓</b> 150 DPI pixel-burn export</li>
+            <li><b class="tick">✓</b> Metadata, bookmark and form stripping</li>
+            <li><b class="tick">✓</b> Leak check on every export</li>
+            <li class="off"><b class="tick">–</b> Batch, auto-detect, 300 DPI, certificate</li>
+          </ul>
+          <div class="spacer"></div>
+          <a class="btn btn-ghost btn-block" href="app/index.html">Open the app</a>
+        </div>
+        <div class="plan featured">
+          <span class="tag">For weekly work</span>
+          <h3>Pro</h3>
+          <p class="price">$9 <small>/ month · or $29 once</small></p>
+          <ul>
+            <li><b class="tick">✓</b> Everything in Free, unlimited pages</li>
+            <li><b class="tick">✓</b> Batch up to 20 files</li>
+            <li><b class="tick">✓</b> PII auto-detect: email, phone, SSN, cards, IBAN, KR RRN, account numbers, your keywords</li>
+            <li><b class="tick">✓</b> 300 DPI exports and box labels</li>
+            <li><b class="tick">✓</b> Redaction certificate with SHA-256 digest</li>
+            <li><b class="tick">✓</b> Works offline once activated</li>
+          </ul>
+          <div class="spacer"></div>
+          <a class="btn btn-accent btn-block" href="pricing.html">See the plans</a>
+        </div>
+      </div>
+      <p class="small muted" style="margin-top:16px">Payments are handled by Polar as merchant of record, which also takes care of VAT and receipts. Keys work on the devices you activate; no subscription is needed for the free plan.</p>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">Questions people actually ask</p>
+        <h2>Short answers</h2>
+      </div>
+      <div class="faq">
+        <details>
+          <summary>Does Blot upload my PDF?</summary>
+          <p>No. Blot is a static site. The PDF is read, redacted and written again inside your browser tab. There is no endpoint that accepts files, and the app keeps working after you switch off your connection.</p>
+        </details>
+        <details>
+          <summary>Is this real redaction or just a black box drawn on top?</summary>
+          <p>Real redaction. Any page with a redaction is converted to an image at 150–300 DPI and the boxes are painted into that image, so the text underneath no longer exists in the file. Pages without redactions are copied as vectors with annotations removed, and the export is written as a new document, so bookmarks, form fields and attachments from the original are not carried over.</p>
+        </details>
+        <details>
+          <summary>How do I know the redaction worked?</summary>
+          <p>The app reopens the file it just produced and searches the text layer for every value it redacted. The result appears in the report panel with the page count, resolution and SHA-256 of the output. You can run the same check in any PDF reader by searching for the redacted word.</p>
+        </details>
+        <details>
+          <summary>What does it cost?</summary>
+          <p>Free covers files up to 10 pages with manual redactions at 150 DPI, including the leak check, with no account. Pro is $9 per month or $29 once and adds unlimited pages, batch processing, PII auto-detect, 300 DPI, box labels and a redaction certificate.</p>
+        </details>
+        <details>
+          <summary>Does it work on scanned PDFs?</summary>
+          <p>Yes for redacting them: you draw boxes over the scan and the page is rasterised, so those pixels are gone. Automatic detection needs a text layer, so on a pure scan you mark the boxes yourself (or run OCR elsewhere first).</p>
+        </details>
+        <details>
+          <summary>What happens to my licence when I go offline?</summary>
+          <p>A licence key is checked once against Polar and then cached in this browser, so Pro keeps working offline. It is re-checked in the background at most once a week when you are online.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot-grid">
+    <div>
+      <a class="brand" href="index.html" style="font-size:17px">
+        <svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="3.4" rx="1"/><rect x="2" y="10" width="14" height="3.4" rx="1"/><rect x="2" y="16" width="17" height="3.4" rx="1"/></svg>
+        <span>Blot</span>
+      </a>
+      <p style="margin-top:10px;max-width:36ch">Browser-local PDF redaction. No server receives your documents, so there is nothing to retain, sell or leak.</p>
+    </div>
+    <div class="foot-links">
+      <a href="app/index.html">App</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="mailto:neo970720@gmail.com">Contact</a>
+    </div>
+  </div>
+  <div class="wrap" style="margin-top:24px;font-size:12.5px">
+    © <span id="year">2026</span> Blot · Built for people who cannot upload the file.
+  </div>
+</footer>
+
+<script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>

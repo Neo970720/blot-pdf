@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /app/
+
+Sitemap: https://neo970720.github.io/blot-pdf/sitemap.xml

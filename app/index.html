@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Redact a PDF — Blot</title>
+<meta name="description" content="Redact PDFs in your browser. Nothing is uploaded: pages with redactions are pixel-burned at 150–300 DPI, metadata is stripped, and you can verify the export before sharing it.">
+<link rel="canonical" href="https://neo970720.github.io/blot-pdf/app/">
+<meta name="robots" content="noindex,follow">
+<meta name="theme-color" content="#f6f5f1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0e11" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Blot">
+<meta property="og:title" content="Redact a PDF — Blot">
+<meta property="og:description" content="Browser-local PDF redaction with a built-in leak check. Your file never leaves the tab.">
+<meta property="og:url" content="https://neo970720.github.io/blot-pdf/app/">
+<meta property="og:image" content="https://neo970720.github.io/blot-pdf/assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body class="app">
+
+<header class="appbar">
+  <a class="brand" href="../index.html" aria-label="Blot home">
+    <svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="3.4" rx="1"/><rect x="2" y="10" width="14" height="3.4" rx="1"/><rect x="2" y="16" width="17" height="3.4" rx="1"/></svg>
+    <span class="word">Blot</span>
+  </a>
+  <span class="filemeta" id="fileMeta">No file yet</span>
+  <div class="right">
+    <span class="pro-badge" id="proBadge">Pro</span>
+    <button class="iconbtn tools-toggle" id="toolsBtn" type="button" aria-expanded="false">Tools</button>
+    <button class="iconbtn" id="licenseBtn" type="button">Upgrade</button>
+    <button class="iconbtn" id="themeBtn" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8Z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main class="workspace">
+  <aside class="side" aria-label="Tools">
+
+    <section class="panel" aria-labelledby="files-h">
+      <h3 id="files-h">Files</h3>
+      <div class="list" id="fileList" aria-live="polite"></div>
+      <div class="field">
+        <button class="btn btn-ghost btn-sm btn-block" id="addFileBtn" type="button">Choose PDF…</button>
+        <p class="empty-note" id="batchNote" style="margin-top:6px">One file on Free. Batch up to 20 with Pro.</p>
+      </div>
+      <input type="file" id="fileInput" accept="application/pdf,.pdf" multiple hidden>
+    </section>
+
+    <section class="panel" aria-labelledby="detect-h">
+      <h3 id="detect-h">Auto-detect <span class="pro-only muted" style="font-weight:400">Pro</span></h3>
+      <div class="chiprow" id="catChips">
+        <button class="chip" type="button" data-cat="email" aria-pressed="true">Email</button>
+        <button class="chip" type="button" data-cat="phone" aria-pressed="false">Phone</button>
+        <button class="chip" type="button" data-cat="ssn" aria-pressed="true">SSN</button>
+        <button class="chip" type="button" data-cat="card" aria-pressed="true">Card</button>
+        <button class="chip" type="button" data-cat="iban" aria-pressed="true">IBAN</button>
+        <button class="chip" type="button" data-cat="krn" aria-pressed="true">KR RRN</button>
+        <button class="chip" type="button" data-cat="acct" aria-pressed="false">Acct no.</button>
+      </div>
+      <div class="field">
+        <label for="keywords">Also redact these words</label>
+        <textarea class="input" id="keywords" placeholder="Acme Holdings&#10;Project Falcon"></textarea>
+      </div>
+      <div class="field">
+        <button class="btn btn-sm btn-block" id="detectBtn" type="button">Find matches on all pages</button>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="redactions-h">
+      <h3 id="redactions-h">Redactions <span class="muted" id="redactionCount" style="font-weight:400">0</span></h3>
+      <div class="list" id="redactionList" aria-live="polite"></div>
+      <p class="empty-note" id="redactionHint">Drag on the page to draw a redaction box.</p>
+      <div class="field row2">
+        <button class="btn btn-quiet btn-sm" id="undoBtn" type="button">Undo</button>
+        <button class="btn btn-quiet btn-sm" id="clearBtn" type="button">Clear page</button>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="export-h">
+      <h3 id="export-h">Export</h3>
+      <div class="field row2">
+        <div>
+          <label for="dpi">Resolution</label>
+          <select class="input" id="dpi">
+            <option value="150">150 DPI</option>
+            <option value="200">200 DPI</option>
+            <option value="300" data-pro="1">300 DPI · Pro</option>
+          </select>
+        </div>
+        <div>
+          <label for="fill">Cover</label>
+          <select class="input" id="fill">
+            <option value="black">Black</option>
+            <option value="white">White</option>
+            <option value="#1f3a5f" data-pro="1">Navy · Pro</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="labelText">Label inside boxes <span class="muted">(optional, Pro)</span></label>
+        <input class="input" id="labelText" type="text" maxlength="24" placeholder="REDACTED" data-pro="1">
+      </div>
+      <div class="field">
+        <label style="display:flex;gap:8px;align-items:center;font-size:13px;color:var(--ink-2)">
+          <input type="checkbox" id="flattenAll"> Flatten every page (max safety)
+        </label>
+        <label style="display:flex;gap:8px;align-items:center;font-size:13px;color:var(--ink-2)">
+          <input type="checkbox" id="wantCert" data-pro="1"> Redaction certificate (Pro)
+        </label>
+      </div>
+      <div class="field">
+        <button class="btn btn-accent btn-block" id="exportBtn" type="button">Redact &amp; download</button>
+        <button class="btn btn-ghost btn-block" id="exportAllBtn" type="button" hidden style="margin-top:8px">Redact all files</button>
+      </div>
+      <div id="reportSlot"></div>
+    </section>
+
+    <section class="panel" aria-labelledby="limits-h">
+      <h3 id="limits-h">This build</h3>
+      <p class="empty-note" id="planNote">Free · 10 pages per file · 150 DPI · manual boxes · leak check included.</p>
+      <p class="empty-note" style="margin-top:6px">Processing happens in this tab. Blot has no upload endpoint.</p>
+    </section>
+  </aside>
+
+  <div class="canvasarea" id="canvasArea">
+    <div class="dropzone" id="dropzone">
+      <div class="dropinner">
+        <h2>Drop a PDF here</h2>
+        <p>It opens in your browser and stays there. Redactions are burned into the page image before the new file is written.</p>
+        <button class="btn btn-accent" id="pickBtn" type="button">Choose a PDF</button>
+        <p class="tiny">No account. No upload. Works offline after the first load.</p>
+      </div>
+    </div>
+
+    <div class="pagecard" id="pageCard" hidden>
+      <canvas id="pageCanvas" aria-label="Page preview"></canvas>
+      <div class="overlay" id="overlay"></div>
+    </div>
+
+    <div class="pagebar" id="pageBar" hidden>
+      <button type="button" id="prevBtn" aria-label="Previous page">←</button>
+      <span class="pg" id="pageLabel">1 / 1</span>
+      <button type="button" id="nextBtn" aria-label="Next page">→</button>
+      <span class="divider"></span>
+      <button type="button" id="zoomOut" aria-label="Zoom out">−</button>
+      <span class="pg" id="zoomLabel" style="min-width:48px">100%</span>
+      <button type="button" id="zoomIn" aria-label="Zoom in">+</button>
+    </div>
+  </div>
+</main>
+
+<div class="modal-backdrop" id="licenseModal" role="dialog" aria-modal="true" aria-labelledby="licenseTitle">
+  <div class="modal">
+    <h2 id="licenseTitle">Blot Pro</h2>
+    <p>Unlimited pages and batch files, PII auto-detect, 300 DPI, box labels and a signed-by-hash redaction certificate. Files still never leave your browser.</p>
+    <div class="field row2" style="margin-top:18px">
+      <a class="btn btn-accent" id="buyMonthly" href="#" target="_blank" rel="noopener">Pro · $9 / month</a>
+      <a class="btn" id="buyLifetime" href="#" target="_blank" rel="noopener">Pro · $29 once</a>
+    </div>
+    <div class="field" style="margin-top:18px">
+      <label for="licenseKey">Already have a licence key?</label>
+      <input class="input" id="licenseKey" type="text" autocomplete="off" spellcheck="false" placeholder="BLOT-XXXX-XXXX-XXXX">
+    </div>
+    <p class="small muted" id="licenseMsg" style="margin-top:8px">Demo build: try <span class="mono">BLOT-DEMO-2026</span> to unlock Pro locally. No card, nothing charged.</p>
+    <div class="actions">
+      <button class="btn btn-quiet" id="licenseCancel" type="button">Close</button>
+      <button class="btn btn-ghost" id="licenseRemove" type="button" hidden>Remove licence from this browser</button>
+      <button class="btn" id="licenseActivate" type="button">Activate</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="../vendor/pdf.min.js"></script>
+<script src="../vendor/pdf-lib.min.js"></script>
+<script src="../assets/config.js"></script>
+<script src="../assets/license.js"></script>
+<script src="../assets/engine.js"></script>
+<script src="../assets/app.js"></script>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("../sw.js").catch(function () {});
+    });
+  }
+</script>
+</body>
+</html>
