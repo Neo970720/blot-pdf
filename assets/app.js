@@ -111,13 +111,11 @@
 
   function openLicense() {
     const m = $("licenseModal");
-    const monthly = L.checkoutUrl("monthly");
-    const lifetime = L.checkoutUrl("lifetime");
-    $("buyMonthly").href = monthly || "#licenseKey";
-    $("buyLifetime").href = lifetime || "#licenseKey";
+    const checkout = L.checkoutUrl();
+    $("buyPro").href = checkout || "#licenseKey";
     $("licenseMsg").textContent = L.read().tier === "pro"
-      ? "Pro is active on this browser (" + (L.read().source === "demo" ? "demo key" : "Polar licence") + ")."
-      : "Demo build: try BLOT-DEMO-2026 to unlock Pro locally. No card, nothing charged.";
+      ? "Pro is active on this browser (" + (L.read().source === "demo" ? "demo key" : "Gumroad licence") + ")."
+      : "Paste the key from your Gumroad receipt. It is checked once, then cached in this browser for offline use.";
     $("licenseMsg").style.color = "";
     m.classList.add("show");
     setTimeout(() => $("licenseKey").focus(), 60);

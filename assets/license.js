@@ -1,9 +1,8 @@
 /* Blot licence handling.
  * Free: no key, no account, works forever.
- * Pro:  a Polar license key. Validated against Polar's public customer-portal
- *       endpoint (no secret in the client) and cached locally so the app keeps
- *       working offline. While BLOT_CONFIG.polar.orgId is empty, demo keys
- *       unlock Pro locally so the whole purchase flow can be reviewed.
+ * Pro:  a Gumroad licence key. Validated against Gumroad's public licence
+ *       endpoint (POST /v2/licenses/verify — no secret, no OAuth, CORS open)
+ *       and then cached locally so the app keeps working offline.
  */
 (function () {
   "use strict";
@@ -37,22 +36,39 @@
     return s.tier === "pro" ? s : null;
   }
 
-  function normalize(key) { return String(key || "").trim().toUpperCase(); }
+  function normalize(key) {
+    let k = String(key || "").trim().toUpperCase().replace(/[\s_]+/g, "");
+    if (/^[A-Z0-9]{32}$/.test(k)) k = k.replace(/(.{8})(.{8})(.{8})(.{8})/, "$1-$2-$3-$4");
+    return k;
+  }
 
-  async function validateWithPolar(key) {
-    const url = CFG.polar.validateUrl;
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ key, organization_id: CFG.polar.orgId })
+  async function validateWithGumroad(key, countUse) {
+    const body = new URLSearchParams({
+      product_id: CFG.gumroad.productId,
+      license_key: key,
+      increment_uses_count: countUse ? "true" : "false"
     });
-    if (res.status === 404) return { ok: false, message: "That key was not found. Check for typos, or use the link in your purchase email." };
-    if (!res.ok) return { ok: false, message: "Could not reach the licence server (HTTP " + res.status + "). Try again in a moment." };
-    const data = await res.json();
-    const status = (data && (data.status || (data.license_key && data.license_key.status))) || "";
-    if (status === "granted") return { ok: true, data };
-    if (status === "revoked") return { ok: false, message: "This key was revoked. If your subscription ended, renew it to restore Pro." };
-    return { ok: false, message: "This key is not active right now (status: " + (status || "unknown") + ")." };
+    const res = await fetch(CFG.gumroad.verifyUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: body.toString()
+    });
+    if (res.status === 404) {
+      return { ok: false, message: "That key was not found for Blot Pro. Check for typos, or copy the key from your Gumroad receipt." };
+    }
+    if (!res.ok) {
+      return { ok: false, message: "Could not reach the licence server (HTTP " + res.status + "). Try again in a moment." };
+    }
+    let data = null;
+    try { data = await res.json(); } catch (e) { data = null; }
+    if (!data || data.success !== true) {
+      return { ok: false, message: "This key is not active right now. If you have just bought it, try again in a minute." };
+    }
+    const purchase = data.purchase || {};
+    if (purchase.refunded || purchase.chargebacked || purchase.dispute_won) {
+      return { ok: false, message: "This purchase was refunded or reversed, so the key is no longer active." };
+    }
+    return { ok: true, data: data };
   }
 
   async function activate(inputKey) {
@@ -64,29 +80,28 @@
       return { ok: true, message: "Demo licence active on this browser." };
     }
 
-    if (!CFG.polar.orgId) {
-      return { ok: false, message: "Online licence checks are not switched on for this build yet. Only demo keys work here." };
+    if (!CFG.gumroad.productId) {
+      return { ok: false, message: "Licence checks are not configured in this build yet." };
     }
 
     try {
-      const result = await validateWithPolar(key);
+      const result = await validateWithGumroad(key, true);
       if (!result.ok) return result;
-      const plan = String(key).length > 20 ? "polar" : "polar";
-      write({ tier: "pro", key, source: "polar", plan, since: new Date().toISOString(), checked: Date.now() });
-      return { ok: true, message: "Licence verified. Pro unlocked on this browser." };
+      write({ tier: "pro", key, source: "gumroad", plan: "lifetime", since: new Date().toISOString(), checked: Date.now() });
+      return { ok: true, message: "Licence verified. Pro is unlocked on this browser." };
     } catch (e) {
       return { ok: false, message: "Could not reach the licence server. Check your connection and try again." };
     }
   }
 
-  /* Re-check a Polar key in the background now and then; offline keeps working. */
+  /* Re-check a stored Gumroad key in the background now and then; offline keeps working. */
   async function refreshIfStale() {
     const s = read();
-    if (s.tier !== "pro" || s.source !== "polar" || !CFG.polar.orgId) return;
+    if (s.tier !== "pro" || s.source !== "gumroad" || !CFG.gumroad.productId) return;
     const age = Date.now() - (s.checked || 0);
     if (age < (CFG.revalidateDays || 7) * 86400000) return;
     try {
-      const r = await validateWithPolar(s.key);
+      const r = await validateWithGumroad(s.key, false);
       if (r.ok) write(Object.assign({}, s, { checked: Date.now() }));
     } catch (e) { /* stay offline-friendly */ }
   }
@@ -95,9 +110,8 @@
     write({ tier: "free" });
   }
 
-  function checkoutUrl(plan) {
-    const p = plan === "lifetime" ? CFG.polar.checkoutLifetime : CFG.polar.checkoutMonthly;
-    return p || "";
+  function checkoutUrl() {
+    return (CFG.gumroad && CFG.gumroad.checkoutUrl) || "";
   }
 
   function onChange(cb) { listeners.add(cb); return () => listeners.delete(cb); }

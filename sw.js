@@ -1,5 +1,5 @@
 /* Blot service worker — keeps the tool usable offline. No document ever touches the network. */
-const VERSION = "blot-v1.0.1";
+const VERSION = "blot-v1.0.2";
 const BASE = new URL("./", self.location).pathname;
 const FILES = [
   "",

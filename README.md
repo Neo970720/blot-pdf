@@ -7,7 +7,7 @@ vendored `pdf.js` and `pdf-lib`.
 ```
 .
 ├── index.html              marketing page (SEO, JSON-LD, FAQ)
-├── pricing.html            plans + Polar checkout links bound from config.js
+├── pricing.html            plans + Gumroad checkout link bound from config.js
 ├── privacy.html            privacy policy (matches what the code actually does)
 ├── terms.html              licence, refunds, redaction responsibility
 ├── 404.html
@@ -17,7 +17,7 @@ vendored `pdf.js` and `pdf-lib`.
 │   ├── config.js           ← the only file to edit before going live
 │   ├── engine.js           detection, export, verification, certificate
 │   ├── app.js              UI: file queue, canvas, boxes, export flow
-│   ├── license.js          Polar licence keys, demo keys, offline cache
+│   ├── license.js          Gumroad licence keys, offline cache
 │   ├── og.png, icon-*.png, favicon.svg
 ├── vendor/                 pdf.min.js, pdf.worker.min.js, pdf-lib.min.js (vendored, offline)
 ├── sw.js                   service worker: app shell cached for offline use
@@ -53,7 +53,7 @@ vendored `pdf.js` and `pdf-lib`.
 | PII auto-detect | — | ✓ |
 | Batch | — | up to 20 files |
 | Certificate | — | ✓ |
-| Price | $0 | $9/month or $29 once |
+| Price | $0 | $29 once, lifetime |
 
 Limits live in `assets/config.js` (`limits`). They are enforced in the UI only — this is a static app, so a
 determined user can edit JavaScript. That is the normal trade-off for a serverless tool; the paid value is
@@ -80,29 +80,28 @@ Cloudflare Pages also works: connect the repo, framework preset **None**, build 
 directory `/`; `_headers` (CSP, `nosniff`, referrer policy, immutable `/vendor` caching) is then applied
 automatically — GitHub Pages ignores it.
 
-## Turn on payments (Polar)
+## Turn on payments (Gumroad)
 
 Live setup (already done, kept here for reference):
 
 | Thing | Value |
 |---|---|
-| Organization | `Blot` (slug `blot-pdf`), id `a4052b9a-6301-400e-abc8-523c0c6839c4` |
-| Benefit | License Keys, prefix `BLOT`, 3 activations, id `ec96f5a5-b099-411d-984b-16ec0674e46c` |
-| Pro monthly | $9 / month, product `0a3c08a4-ee3d-4379-8d8e-88067abbef13` |
-| Pro lifetime | $29 once, product `ff8dce45-c344-4ff9-92b3-300a2f603f79` |
-| Checkout (monthly) | `https://buy.polar.sh/polar_cl_WEDHiBUDwyL8z4D8UMXn42iREPhzHDnYHRNow2HJiP9` |
-| Checkout (lifetime) | `https://buy.polar.sh/polar_cl_3XKhbTjbFHrwM4fdpoNtjATTSzXf3gLc5hqR34OFeDT` |
+| Store | `sheetwrightstudio.gumroad.com` (seller: Sheetwright) |
+| Pro lifetime | **$29 once**, product id `vBIqiEzX8LLEDnruwMNezw==` |
+| Product page | `https://sheetwrightstudio.gumroad.com/l/blot-pro` |
+| Licence endpoint | `https://api.gumroad.com/v2/licenses/verify` |
+| Payouts | Gumroad → KR bank account (KRW), already onboarded |
 
-Payouts run through Stripe Express (KR, KRW). Until that onboarding (identity + bank account) is finished
-Polar keeps checkout in test mode and no card is charged.
+`demo.enabled` is **false** in production; the demo key list is empty.
 
-`demo.enabled` is **false** in production; the demo key list is empty. To dry-run the paid flow without
-charging, point `validateUrl` at Polar's sandbox and test there.
+How validation works: the app POSTs `product_id` + `license_key` (form-encoded) to
+`https://api.gumroad.com/v2/licenses/verify`. That endpoint needs no OAuth and no secret, and answers with
+`Access-Control-Allow-Origin: *`, so a static page can call it directly. A `success: true` answer with a
+purchase that is not `refunded`, `chargebacked` or `dispute_won` is cached in `localStorage` and re-checked
+at most every `revalidateDays` (with `increment_uses_count=false` so a re-check never burns a seat).
 
-How validation works: the app POSTs `{key, organization_id}` to
-`https://api.polar.sh/v1/customer-portal/license-keys/validate` — Polar documents this endpoint as safe for
-public clients. A `status: "granted"` answer is cached in `localStorage` and re-checked at most every
-`revalidateDays`. No secret key is shipped in the client.
+The licence key block is a content block on the Gumroad product (`rich_content`), which is what makes
+Gumroad issue a key per sale.
 
 ## Verification
 

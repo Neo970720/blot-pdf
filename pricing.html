@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pricing — Blot PDF redaction</title>
-<meta name="description" content="Blot pricing: free for files up to 10 pages with the leak check included. Pro is $9 per month or $29 once for unlimited pages, batch, PII auto-detect, 300 DPI and a redaction certificate.">
+<meta name="description" content="Blot pricing: free for files up to 10 pages with the leak check included. Pro is $29 once, a lifetime licence, for unlimited pages, batch, PII auto-detect, 300 DPI and a redaction certificate.">
 <link rel="canonical" href="https://neo970720.github.io/blot-pdf/pricing.html">
 <meta name="theme-color" content="#f6f5f1" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0d0e11" media="(prefers-color-scheme: dark)">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Pricing — Blot PDF redaction">
-<meta property="og:description" content="Free plan with a leak check included. Pro $9/month or $29 once.">
+<meta property="og:description" content="Free plan with a leak check included. Pro $29 once, no subscription.">
 <meta property="og:url" content="https://neo970720.github.io/blot-pdf/pricing.html">
 <meta property="og:image" content="https://neo970720.github.io/blot-pdf/assets/og.png">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
@@ -24,8 +24,8 @@
   "description": "Browser-local PDF redaction: unlimited pages, batch processing, PII auto-detect, 300 DPI exports and a redaction certificate.",
   "brand": { "@type": "Brand", "name": "Blot" },
   "offers": [
-    { "@type": "Offer", "name": "Pro monthly", "price": "9.00", "priceCurrency": "USD", "availability": "https://schema.org/InStock", "url": "https://neo970720.github.io/blot-pdf/pricing.html" },
-    { "@type": "Offer", "name": "Pro lifetime", "price": "29.00", "priceCurrency": "USD", "availability": "https://schema.org/InStock", "url": "https://neo970720.github.io/blot-pdf/pricing.html" }
+    { "@type": "Offer", "name": "Free", "price": "0.00", "priceCurrency": "USD", "availability": "https://schema.org/InStock", "url": "https://neo970720.github.io/blot-pdf/pricing.html" },
+    { "@type": "Offer", "name": "Pro lifetime", "price": "29.00", "priceCurrency": "USD", "availability": "https://schema.org/InStock", "url": "https://sheetwrightstudio.gumroad.com/l/blot-pro" }
   ]
 }
 </script>
@@ -73,9 +73,9 @@
         </div>
 
         <div class="plan featured">
-          <span class="tag">Most people who redact weekly</span>
+          <span class="tag">One payment, no renewal</span>
           <h3>Pro</h3>
-          <p class="price">$9 <small>/ month</small></p>
+          <p class="price">$29 <small>once · lifetime licence</small></p>
           <ul>
             <li><b class="tick">✓</b> Unlimited pages per file</li>
             <li><b class="tick">✓</b> Batch up to 20 files in one run</li>
@@ -85,15 +85,15 @@
             <li><b class="tick">✓</b> Redaction certificate with SHA-256 digest</li>
           </ul>
           <div class="spacer"></div>
-          <a class="btn btn-accent btn-block" id="buyMonthly" href="app/index.html">Get Pro — $9/month</a>
-          <p class="small muted" style="margin-top:10px;text-align:center">or <a class="link" id="buyLifetime" href="app/index.html">$29 once, no renewal</a></p>
+          <a class="btn btn-accent btn-block" id="buyPro" href="https://sheetwrightstudio.gumroad.com/l/blot-pro" target="_blank" rel="noopener">Get Blot Pro — $29 lifetime</a>
+          <p class="small muted" style="margin-top:10px;text-align:center">Secure checkout on Gumroad · instant licence key</p>
         </div>
       </div>
 
       <div class="compare" style="margin-top:28px;padding:22px">
         <h3 style="font-size:16px">How buying works</h3>
-        <p class="small muted" style="margin-top:8px">Checkout runs on Polar, which is the merchant of record: it takes the payment, handles VAT/sales tax and emails the receipt. You get a Blot licence key. Paste it into the app once and Pro unlocks on that browser; the check is cached, so it keeps working offline.</p>
-        <p class="small muted" style="margin-top:8px">Already bought it? Open the app, press <b>Licence</b> in the top bar and paste the key. If you lose the key, the Polar receipt email has a link to your customer portal.</p>
+        <p class="small muted" style="margin-top:8px">Checkout runs on Gumroad, which is the merchant of record: it takes the payment, handles taxes and emails the receipt with your licence key. Paste the key into the app once and Pro unlocks on that browser; the check is cached, so it keeps working offline.</p>
+        <p class="small muted" style="margin-top:8px">Already bought it? Open the app, press <b>Licence</b> in the top bar and paste the key. If you lose the key, the Gumroad receipt email has a link back to your purchase.</p>
         <div class="hero-cta" style="margin-top:16px">
           <a class="btn btn-ghost btn-sm" href="app/index.html">Enter a licence key</a>
           <a class="btn btn-quiet btn-sm" href="terms.html">Terms &amp; refunds</a>
@@ -103,7 +103,7 @@
       <div class="faq" style="margin-top:34px">
         <details>
           <summary>Is there a per-document charge?</summary>
-          <p>No. Pro is a subscription or a one-off purchase, whatever the number of files. Nothing meters documents behind your back.</p>
+          <p>No. Pro is a one-off $29 purchase, whatever the number of files. Nothing meters documents behind your back, and there is no subscription to cancel.</p>
         </details>
         <details>
           <summary>Do I need Pro for confidential work?</summary>
@@ -146,10 +146,8 @@
 <script>
   (function () {
     var c = window.BLOT_CONFIG;
-    var m = document.getElementById("buyMonthly");
-    var l = document.getElementById("buyLifetime");
-    if (c.polar.checkoutMonthly) { m.href = c.polar.checkoutMonthly; m.target = "_blank"; m.rel = "noopener"; }
-    if (c.polar.checkoutLifetime) { l.href = c.polar.checkoutLifetime; l.target = "_blank"; l.rel = "noopener"; }
+    var b = document.getElementById("buyPro");
+    if (c.gumroad && c.gumroad.checkoutUrl) { b.href = c.gumroad.checkoutUrl; b.target = "_blank"; b.rel = "noopener"; }
     document.getElementById("year").textContent = new Date().getFullYear();
   })();
 </script>
