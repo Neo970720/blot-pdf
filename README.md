@@ -67,32 +67,37 @@ python3 -m http.server 8080
 # open http://localhost:8080/index.html  (service worker needs http(s), not file://)
 ```
 
-## Deploy (Cloudflare Pages, $0)
+## Live
 
-1. Push this folder to a GitHub repository (or upload it directly in the Pages dashboard).
-2. Cloudflare dashboard → **Workers & Pages → Create → Pages → Connect to Git**, framework preset **None**,
-   build command empty, output directory `/` (this folder).
-3. Add the custom domain (`blotpdf.com` — **available as of 20 Nov 2026**, checked with whois) or use the
-   free `*.pages.dev` subdomain first.
-4. `_headers` is picked up automatically: CSP, `nosniff`, referrer policy, immutable caching for `/vendor`.
+**https://neo970720.github.io/blot-pdf/** — GitHub Pages, branch `main`, root folder, $0/month.
 
-GitHub Pages works too: copy the folder to a repo, enable Pages, add a `CNAME` file with the domain. The
-service worker uses its own location as the base path, so a project sub-path (`/repo/`) also works.
+The service worker derives its scope from its own location, so the project sub-path (`/blot-pdf/`) is the
+base for the app shell, the manifest and every relative link. All canonical, `og:url`, JSON-LD and sitemap
+URLs point at that same prefix; `404.html` carries `<base href="/blot-pdf/">` so deep links still style
+correctly. If the site ever moves to a root domain, change those URLs and that one `base` tag.
+
+Cloudflare Pages also works: connect the repo, framework preset **None**, build command empty, output
+directory `/`; `_headers` (CSP, `nosniff`, referrer policy, immutable `/vendor` caching) is then applied
+automatically — GitHub Pages ignores it.
 
 ## Turn on payments (Polar)
 
-1. Create a Polar account and connect a bank account for payouts (KRW payouts are supported).
-2. Create two products:
-   * **Blot Pro — monthly**, $9 / month, recurring.
-   * **Blot Pro — lifetime**, $29, one-time.
-3. For each product add a **Benefit → License Keys**, prefix `BLOT`, and if you like set
-   “activation limit” to 3 devices.
-4. Copy from the dashboard into `assets/config.js`:
-   * `polar.orgId` — Settings → Organization id.
-   * `polar.checkoutMonthly`, `polar.checkoutLifetime` — the checkout links.
-   * `polar.productMonthlyId`, `polar.productLifetimeId` — optional, for reporting.
-5. Set `demo.enabled = false` once real keys are live (or keep it and remove the demo key).
-6. Test with Polar's sandbox: `validateUrl` → `https://sandbox-api.polar.sh/v1/customer-portal/license-keys/validate`.
+Live setup (already done, kept here for reference):
+
+| Thing | Value |
+|---|---|
+| Organization | `Blot` (slug `blot-pdf`), id `a4052b9a-6301-400e-abc8-523c0c6839c4` |
+| Benefit | License Keys, prefix `BLOT`, 3 activations, id `ec96f5a5-b099-411d-984b-16ec0674e46c` |
+| Pro monthly | $9 / month, product `0a3c08a4-ee3d-4379-8d8e-88067abbef13` |
+| Pro lifetime | $29 once, product `ff8dce45-c344-4ff9-92b3-300a2f603f79` |
+| Checkout (monthly) | `https://buy.polar.sh/polar_cl_WEDHiBUDwyL8z4D8UMXn42iREPhzHDnYHRNow2HJiP9` |
+| Checkout (lifetime) | `https://buy.polar.sh/polar_cl_3XKhbTjbFHrwM4fdpoNtjATTSzXf3gLc5hqR34OFeDT` |
+
+Payouts run through Stripe Express (KR, KRW). Until that onboarding (identity + bank account) is finished
+Polar keeps checkout in test mode and no card is charged.
+
+`demo.enabled` is **false** in production; the demo key list is empty. To dry-run the paid flow without
+charging, point `validateUrl` at Polar's sandbox and test there.
 
 How validation works: the app POSTs `{key, organization_id}` to
 `https://api.polar.sh/v1/customer-portal/license-keys/validate` — Polar documents this endpoint as safe for
