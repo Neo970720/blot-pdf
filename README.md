@@ -4,6 +4,15 @@ A static micro-SaaS. Every PDF is opened, redacted and rewritten **inside the vi
 There is no upload endpoint, no database and no server process: the site is plain HTML/CSS/JS plus
 vendored `pdf.js` and `pdf-lib`.
 
+## Live
+
+| What | Where |
+|---|---|
+| App (redact a PDF now) | https://blot.munzzyy.dev/app/ |
+| Marketing site | https://blot.munzzyy.dev/ (GitHub Pages mirror: https://neo970720.github.io/blot-pdf/) |
+| Pricing / Blot Pro | https://blot.munzzyy.dev/pricing.html |
+| Blot Pro $29 lifetime (Gumroad) | https://sheetwrightstudio.gumroad.com/l/blot-pro |
+
 ```
 .
 ├── index.html              marketing page (SEO, JSON-LD, FAQ)
